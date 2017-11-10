@@ -1,4 +1,8 @@
 {
-    "sleep_sec": 300,
-    "sensors": [4, 9]
+    "MEASURE_INTERVAL": 30,
+    "SAMPLE_INTERVAL": 150,
+    "SENSOR_PINS": [4, 9],
+    "SWITCH_PIN": 16,
+    "HUMID_UPPER": 42,
+    "HUMID_LOWER": 36
 }
