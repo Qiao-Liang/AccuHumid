@@ -1,0 +1,79 @@
+<html>
+    <body>
+        <div>
+            <input id="txtSrt" class="flatpickr flatpickr-input" type="text" placeholder="Start Datetime..." readonly="readonly">
+            <input id="txtEnd" class="flatpickr flatpickr-input" type="text" placeholder="End Datetime..." readonly="readonly">
+            <button id="btnGo" onclick="javascript:go()">Go</button>
+        </div>
+        <div class="chart-container" style="position: relative;">
+            <canvas id="myChart"></canvas>
+        </div>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+        <script type="text/javascript">
+            var options = {enableTime: true, time_24hr: true, defaultHour: 0};
+            var ctx = document.getElementById("myChart");
+            var txtSrt = document.getElementById("txtSrt");
+            var txtEnd = document.getElementById("txtEnd");
+            flatpickr(txtSrt, options);
+            flatpickr(txtEnd, options);
+            
+            function get(host, params, callback)
+            {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function() {
+                    if (xmlHttp.readyState == XMLHttpRequest.DONE) {
+                       if (xmlHttp.status == 200) {
+                           callback(JSON.parse(xmlHttp.responseText));
+                       }
+                       else if (xmlHttp.status == 400) {
+                          console.log('There was an error 400');
+                       }
+                       else {
+                           console.log('something else other than 200 was returned');
+                       }
+                    }
+                };
+
+                xmlHttp.open("GET", host + '?' + encodeURIComponent(Object.keys(params).map(function(key) {return key + '=' + params[key];}).join('&')), true);
+                xmlHttp.send();
+            }
+
+            function fillData(data) {
+                var labels = [];
+                var humid4 = [];
+                var humid9 = [];
+
+                data.forEach(function(dt) {
+                    labels.push(dt['dt']);
+                    humid4.push(dt['4']['h']);
+                    humid9.push(dt['9']['h']);
+                });
+
+                var humidLine = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                                label: "Sensor 4",
+                                borderColor: 'rgb(255, 182, 48)',
+                                data: humid4
+                            },
+                            {
+                                label: "Sensor 9",
+                                borderColor: 'rgb(48, 182, 255)',
+                                data: humid9
+                            }
+                        ]
+                    }
+                });
+            }
+
+            function go() {
+                get("http://192.168.0.16:8080/temp_humid", {srt: txtSrt.value, end: txtEnd.value}, fillData);
+            }
+        </script>
+    </body>
+</html>

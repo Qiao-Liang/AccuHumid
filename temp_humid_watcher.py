@@ -17,8 +17,8 @@ HUMID_UPPER = config_data[u"HUMID_UPPER"]
 HUMID_LOWER = config_data[u"HUMID_LOWER"]
 SENSOR_COUNT = len(SENSOR_PINS)
 
-# GPIO.cleanup()
-GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
 GPIO.setup(SWITCH_PIN, GPIO.OUT)
 switch_on = False
 sleep_time = SAMPLE_INTERVAL
