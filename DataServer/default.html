@@ -6,7 +6,8 @@
             <button id="btnGo" onclick="javascript:go()">Go</button>
         </div>
         <div class="chart-container" style="position: relative;">
-            <canvas id="myChart"></canvas>
+            <canvas id="cvsHumid"></canvas>
+            <canvas id="cvsTemp"></canvas>
         </div>
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -14,14 +15,13 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
         <script type="text/javascript">
             var options = {enableTime: true, time_24hr: true, defaultHour: 0};
-            var ctx = document.getElementById("myChart");
+            var cvsTemp = document.getElementById("cvsTemp");
             var txtSrt = document.getElementById("txtSrt");
             var txtEnd = document.getElementById("txtEnd");
             flatpickr(txtSrt, options);
             flatpickr(txtEnd, options);
             
-            function get(host, params, callback)
-            {
+            function get(host, params, callback) {
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.onreadystatechange = function() {
                     if (xmlHttp.readyState == XMLHttpRequest.DONE) {
@@ -44,19 +44,24 @@
             function fillData(data) {
                 var labels = [];
                 var humid4 = [];
+                var temp4 = [];
                 var humid9 = [];
+                var temp9 = [];
 
                 data.forEach(function(dt) {
                     labels.push(dt['dt']);
                     humid4.push(dt['4']['h']);
+                    temp4.push(dt['4']['t'])
                     humid9.push(dt['9']['h']);
+                    temp9.push(dt['9']['t'])
                 });
 
-                var humidLine = new Chart(ctx, {
+                var humidLine = new Chart(document.getElementById("cvsHumid"), {
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [{
+                        datasets: [
+                            {
                                 label: "Sensor 4",
                                 borderColor: 'rgb(255, 182, 48)',
                                 data: humid4
@@ -67,6 +72,41 @@
                                 data: humid9
                             }
                         ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            position: 'left',
+                            fontSize: 15,
+                            text: 'Humidity'
+                        }
+                    }
+                });
+
+                var tempLine = new Chart(document.getElementById("cvsTemp"), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Sensor 4",
+                                borderColor: 'rgb(182, 48, 255)',
+                                data: temp4
+                            },
+                            {
+                                label: "Sensor 9",
+                                borderColor: 'rgb(255, 48, 182)',
+                                data: temp9
+                            }
+                        ]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            position: 'left',
+                            fontSize: 15,
+                            text: 'Temperature'
+                        }
                     }
                 });
             }
