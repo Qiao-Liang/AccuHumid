@@ -38,16 +38,16 @@ while True:
 
     if switch_on:
         if avg_humid > HUMID_UPPER:
-           GPIO.output(SWITCH_PIN, GPIO.LOW)
-           sleep_time = SAMPLE_INTERVAL
-           switch_on = False
-           db.switch_log.insert_one({"dt": data["dt"], "on": 0})
+            GPIO.output(SWITCH_PIN, GPIO.LOW)
+            sleep_time = SAMPLE_INTERVAL
+            data['on'] = 0
+            switch_on = False
     else:
         if avg_humid < HUMID_LOWER:
             GPIO.output(SWITCH_PIN, GPIO.HIGH)
             sleep_time = MEASURE_INTERVAL
+            data['on'] = 1
             switch_on = True
-            db.switch_log.insert_one({"dt": data["dt"], "on": 1})
 
     db.temp_humid.insert_one(data)
     sleep(sleep_time)
