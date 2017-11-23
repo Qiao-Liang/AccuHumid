@@ -19,7 +19,6 @@ http.createServer(function (req, res) {
             });
             break;
         case "/temp_humid":
-        case "/switch_log":
             client.connect(db_url, function(err, db) {
                 if (err) throw err;
 
@@ -33,7 +32,7 @@ http.createServer(function (req, res) {
                         query['dt']['$lt'] = params.end;
                     }
 
-                    db.collection(parsed_url.pathname.substring(1)).find(query).toArray(function(err, result) {
+                    db.collection('temp_humid').find(query).toArray(function(err, result) {
                         if (err) throw err;
                         res.writeHead(200, {'Content-Type': 'application/json'});
                         res.write(JSON.stringify(result));
