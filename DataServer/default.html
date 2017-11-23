@@ -5,9 +5,7 @@
             <input id="txtEnd" class="flatpickr flatpickr-input" type="text" placeholder="End Datetime..." readonly="readonly">
             <button id="btnGo" onclick="javascript:go()">Go</button>
         </div>
-        <div class="chart-container" style="position: relative;">
-            <canvas id="cvsHumid"></canvas>
-            <canvas id="cvsTemp"></canvas>
+        <div id="divChart" class="chart-container" style="position: relative;">
         </div>
 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -15,7 +13,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
         <script type="text/javascript">
             var options = {enableTime: true, time_24hr: true, defaultHour: 0};
-            var cvsTemp = document.getElementById("cvsTemp");
+            var divChart = document.getElementById("divChart");
             var txtSrt = document.getElementById("txtSrt");
             var txtEnd = document.getElementById("txtEnd");
             flatpickr(txtSrt, options);
@@ -42,73 +40,94 @@
             }
 
             function fillData(data) {
+                var sensors = ['4', '9'];
                 var labels = [];
-                var humid4 = [];
-                var temp4 = [];
-                var humid9 = [];
-                var temp9 = [];
+                var point_color = [];
+                var sensor_data = {};
+                sensors.forEach(function(sensor) {
+                    sensor_data[sensor] = {t: [], h: []};
+                });
 
                 data.forEach(function(dt) {
                     labels.push(dt['dt']);
-                    humid4.push(dt['4']['h']);
-                    temp4.push(dt['4']['t'])
-                    humid9.push(dt['9']['h']);
-                    temp9.push(dt['9']['t'])
-                });
 
-                var humidLine = new Chart(document.getElementById("cvsHumid"), {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: "Sensor 4",
-                                borderColor: 'rgb(255, 182, 48)',
-                                data: humid4
-                            },
-                            {
-                                label: "Sensor 9",
-                                borderColor: 'rgb(48, 182, 255)',
-                                data: humid9
-                            }
-                        ]
-                    },
-                    options: {
-                        title: {
-                            display: true,
-                            position: 'left',
-                            fontSize: 15,
-                            text: 'Humidity'
+                    if ('on' in dt) {
+                        switch(dt['on']) {
+                            case 0:
+                                point_color.push('#000000');
+                                break;
+                            case 1:
+                                point_color.push('#FF0000');
+                                break;
+                        }
+                    }
+                    else {
+                        point_color.push('');
+                    }
+
+                    for(var sensor in sensor_data) {
+                        for (var field in sensor_data[sensor]){
+                            sensor_data[sensor][field].push(dt[sensor][field]);
                         }
                     }
                 });
 
-                var tempLine = new Chart(document.getElementById("cvsTemp"), {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: "Sensor 4",
-                                borderColor: 'rgb(182, 48, 255)',
-                                data: temp4
+                while (divChart.firstChild) {
+                    divChart.removeChild(divChart.firstChild);
+                }
+
+                for(var sensor in sensor_data) {
+                    var cvsSensor = document.createElement("canvas");
+                    divChart.appendChild(cvsSensor);
+
+                    var chart = new Chart(cvsSensor, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: "Humid",
+                                    borderColor: 'rgb(48, 182, 255)',
+                                    fill: false,
+                                    pointBorderColor: point_color,
+                                    pointBackgroundColor: point_color,
+                                    yAxisID: 'Humid',
+                                    data: sensor_data[sensor]['h']
+                                },
+                                {
+                                    label: "Temp",
+                                    borderColor: 'rgb(255, 90, 0)',
+                                    fill: false,
+                                    yAxisID: 'Temp',
+                                    data: sensor_data[sensor]['t']
+                                }
+                            ]
+                        },
+                        options: {
+                            title: {
+                                display: true,
+                                position: 'left',
+                                fontSize: 15,
+                                text: 'Sensor ' + sensor
                             },
-                            {
-                                label: "Sensor 9",
-                                borderColor: 'rgb(255, 48, 182)',
-                                data: temp9
+                            backgroundColor: 'transparent',
+                            scales: {
+                                yAxes: [
+                                    {
+                                        id: 'Humid',
+                                        type: 'linear',
+                                        position: 'left'
+                                    },
+                                    {
+                                        id: 'Temp',
+                                        type: 'linear',
+                                        position: 'right'
+                                    }
+                                ]
                             }
-                        ]
-                    },
-                    options: {
-                        title: {
-                            display: true,
-                            position: 'left',
-                            fontSize: 15,
-                            text: 'Temperature'
                         }
-                    }
-                });
+                    });
+                }
             }
 
             function go() {
