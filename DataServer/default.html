@@ -42,27 +42,17 @@
             function fillData(data) {
                 var sensors = ['4', '9'];
                 var labels = [];
-                var point_color = [];
+                var point_color = [[], []];
                 var sensor_data = {};
                 sensors.forEach(function(sensor) {
                     sensor_data[sensor] = {t: [], h: []};
                 });
 
-                data.forEach(function(dt) {
+                data.forEach(function(dt, idx) {
                     labels.push(dt['dt']);
 
                     if ('on' in dt) {
-                        switch(dt['on']) {
-                            case 0:
-                                point_color.push('#000000');
-                                break;
-                            case 1:
-                                point_color.push('#FF0000');
-                                break;
-                        }
-                    }
-                    else {
-                        point_color.push('');
+                        point_color[dt['on']].push(idx);
                     }
 
                     for(var sensor in sensor_data) {
@@ -89,8 +79,8 @@
                                     label: "Humid",
                                     borderColor: 'rgb(48, 182, 255)',
                                     fill: false,
-                                    pointBorderColor: point_color,
-                                    pointBackgroundColor: point_color,
+                                    pointBackgroundColor: [],
+                                    pointBorderColor: [],
                                     yAxisID: 'Humid',
                                     data: sensor_data[sensor]['h']
                                 },
@@ -98,6 +88,8 @@
                                     label: "Temp",
                                     borderColor: 'rgb(255, 90, 0)',
                                     fill: false,
+                                    pointBackgroundColor: [],
+                                    pointBorderColor: [],
                                     yAxisID: 'Temp',
                                     data: sensor_data[sensor]['t']
                                 }
@@ -127,6 +119,17 @@
                             }
                         }
                     });
+                    
+                    point_color[0].forEach(getColorFunc(chart.data.datasets[0], "#000000"));
+                    point_color[1].forEach(getColorFunc(chart.data.datasets[0], "#FF0000"));
+                    chart.update();
+                }
+            }
+
+            function getColorFunc(dataset, color) {
+                return function(idx) {
+                    dataset.pointBackgroundColor[idx] = color;
+                    dataset.pointBorderColor[idx] = color;
                 }
             }
 
